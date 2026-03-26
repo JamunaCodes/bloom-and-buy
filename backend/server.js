@@ -80,43 +80,43 @@ app.use((req, res) => {
 
 // Database connection and server start
 const PORT = process.env.PORT || 5000;
+let mongoUri = process.env.MONGODB_URI;
 
-async function startServer() {
-    let mongoUri = process.env.MONGODB_URI;
-    let isMemoryServer = false;
-
-    if (!mongoUri || mongoUri.includes('replace') || mongoUri.includes('cluster.mongodb.net') || mongoUri === '') {
-        console.log('📦 No valid MONGODB_URI found. Starting MongoDB Memory Server...');
-        const { MongoMemoryServer } = require('mongodb-memory-server');
-        const mongoServer = await MongoMemoryServer.create();
-        mongoUri = mongoServer.getUri();
-        process.env.MONGODB_URI = mongoUri; // Export it for other modules
-        isMemoryServer = true;
+// Vercel Serverless: Connect Mongoose synchronously so it buffers requests
+if (mongoUri && !mongoUri.includes('replace') && mongoUri !== '') {
+    if (mongoose.connection.readyState === 0) {
+        mongoose.connect(mongoUri)
+            .then(() => console.log('✅ Connected to MongoDB Atlas'))
+            .catch(err => console.error('❌ MongoDB connection error:', err));
     }
-
-    mongoose.connect(mongoUri)
-        .then(async () => {
-            console.log('✅ Connected to MongoDB');
-            if (isMemoryServer) {
-                console.log('🌱 Seeding memory database...');
-                const { seed } = require('./utils/seed_v2');
-                await seed(true);
-            }
-            initCronJobs();
-            app.listen(PORT, () => {
-                console.log(`🚀 Server running on http://localhost:${PORT}`);
-            });
-        })
-        .catch(err => {
-            console.error('❌ MongoDB connection error:', err);
-            // Start server without DB for development
-            console.log('Starting server without database...');
-            app.listen(PORT, () => {
-                console.log(`🚀 Server running on http://localhost:${PORT} (no DB)`);
-            });
+} else if (!process.env.VERCEL) {
+    // Only run memory server locally if no DB URI is supplied
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    MongoMemoryServer.create().then(mongoServer => {
+        mongoUri = mongoServer.getUri();
+        process.env.MONGODB_URI = mongoUri;
+        mongoose.connect(mongoUri).then(async () => {
+            console.log('✅ Connected to MongoDB Memory Server');
+            console.log('🌱 Seeding memory database...');
+            const { seed } = require('./utils/seed_v2');
+            await seed(true);
         });
+    });
 }
 
-startServer();
+// Start the server locally (Vercel uses module.exports)
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        try {
+            initCronJobs();
+        } catch (e) {
+            console.log('Cron jobs skipped locally.');
+        }
+    });
+}
+
+// Export the Express API for Vercel Serverless Functions
+module.exports = app;
 
 module.exports = app;
