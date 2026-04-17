@@ -87,7 +87,7 @@ This project is configured for **Zero-Config Deployment** using the provided `re
 ---
 
 ## 👨‍💻 Author
-**Developed by Vaishnavi**
+**Developed by Vaishnavi And Rani**
 *Building scalable, AI-integrated e-commerce solutions.*
 
 ---

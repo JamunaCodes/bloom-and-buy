@@ -40,6 +40,7 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 # Railway/Production Host Settings
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS.append('.vercel.app') # Allow all Vercel subdomains
 if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
     ALLOWED_HOSTS.append(os.environ.get('RAILWAY_PUBLIC_DOMAIN'))
 
@@ -78,9 +79,14 @@ MIDDLEWARE = [
 ]
 
 # CORS and CSRF Settings
-CORS_ALLOW_ALL_ORIGINS = True # Wide open for initial Railway setup
+CORS_ALLOW_ALL_ORIGINS = True # Wide open for development and initial Vercel setup
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173').split(',')
+
+# Append Vercel domains if available
+if os.environ.get('VERCEL_URL'):
+    CORS_ALLOWED_ORIGINS.append(f"https://{os.environ.get('VERCEL_URL')}")
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('VERCEL_URL')}")
 
 # Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
