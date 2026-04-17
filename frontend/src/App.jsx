@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import CartDrawer from './components/CartDrawer';
+import CartDrawer from './components/CartDrawer.jsx';
 import Chatbot from './components/Chatbot';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
