@@ -23,7 +23,7 @@
     },
     {
       "src": "/static/(.*)",
-      "dest": "frontend/dist/static/$1"
+      "dest": "/static/$1"
     },
     {
       "src": "/media/(.*)",
@@ -34,7 +34,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
